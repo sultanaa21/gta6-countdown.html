@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTA VI - Countdown</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #ff6b35;
+            --secondary-color: #f7931e;
+            --accent-color: #ffdc00;
+            --bg-dark: #0a0a0a;
+            --bg-gradient: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Animated background grid */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 8s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(4rem, 10vw, 10rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientFlow 4s ease-in-out infinite;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 30px rgba(255, 107, 53, 0.4));
+            letter-spacing: -2px;
+        }
+        
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-weight: 300;
+            margin-bottom: 4rem;
+            opacity: 0.8;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        .countdown-wrapper {
+            perspective: 1000px;
+            margin-bottom: 4rem;
+        }
+        
+        .countdown-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 4rem 3rem;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .countdown-container:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 
+                0 35px 70px rgba(0, 0, 0, 0.5),
+                0 0 100px rgba(255, 107, 53, 0.1);
+        }
+        
+        .countdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 3rem;
+            max-width: 700px;
+        }
+        
+        .time-unit {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .time-unit::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            opacity: 0.7;
+        }
+        
+        .time-number {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 700;
+            color: var(--primary-color);
+            text-shadow: 
+                0 0 20px rgba(255, 107, 53, 0.6),
+                0 0 40px rgba(255, 107, 53, 0.3);
+            margin-bottom: 1rem;
+            min-height: 5rem;
+            display: flex;
+            align-items: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .time-number:hover {
+            transform: scale(1.1);
+            text-shadow: 
+                0 0 30px rgba(255, 107, 53, 0.8),
+                0 0 60px rgba(255, 107, 53, 0.4);
+        }
+        
+        .time-label {
+            font-size: 1rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+        
+        .time-unit:hover .time-label {
+            opacity: 1;
+        }
+        
+        .release-info {
+            background: linear-gradient(135deg, 
+                rgba(255, 107, 53, 0.1), 
+                rgba(247, 147, 30, 0.1));
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(15px);
+            max-width: 500px;
+            margin: 0 auto 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .release-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.1), 
+                transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .release-date {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            color: var(--accent-color);
+        }
+        
+        .release-platforms {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .progress-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            opacity: 0.1;
+        }
+        
+        .progress-ring circle {
+            fill: none;
+            stroke: var(--primary-color);
+            stroke-width: 2;
+            stroke-dasharray: 314;
+            stroke-dashoffset: 314;
+            animation: progress 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes progress {
+            to { stroke-dashoffset: 157; }
+        }
+        
+        .footer {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            opacity: 0.5;
+            text-align: center;
+            font-weight: 300;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .countdown {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+            }
+            
+            .countdown-container {
+                padding: 3rem 2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .subtitle {
+                letter-spacing: 2px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .countdown {
+                gap: 1.5rem;
+            }
+            
+            .time-unit::before {
+                width: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    
+    <div class="container">
+        <h1 class="logo">GTA VI</h1>
+        <p class="subtitle">Vice City Awaits</p>
+        
+        <div class="countdown-wrapper">
+            <div class="countdown-container">
+                <svg class="progress-ring">
+                    <circle cx="60" cy="60" r="50"></circle>
+                </svg>
+                
+                <div class="countdown" id="countdown">
+                    <div class="time-unit">
+                        <div class="time-number" id="days">000</div>
+                        <div class="time-label">Días</div>
+                    </div>
+                    <div class="time-unit">
+                        <div class="time-number" id="hours">00</div>
+                        <div class="time-label">Horas</div>
+                    </div>
+                    <div class="time-unit">
+                        <div class="time-number" id="minutes">00</div>
+                        <div class="time-label">Minutos</div>
+                    </div>
+                    <div class="time-unit">
+                        <div class="time-number" id="seconds">00</div>
+                        <div class="time-label">Segundos</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="release-info">
+            <div class="release-date">26 Mayo 2026</div>
+            <div class="release-platforms">PlayStation 5 • Xbox Series X|S</div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Countdown no oficial • Creado por un fan</p>
+    </div>
+
+    <script>
+        // Countdown functionality
+        function updateCountdown() {
+            const targetDate = new Date('2026-05-26T00:00:00').getTime();
+            const now = new Date().getTime();
+            const timeLeft = targetDate - now;
+            
+            if (timeLeft > 0) {
+                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                // Add smooth number transitions
+                animateNumber('days', days.toString().padStart(3, '0'));
+                animateNumber('hours', hours.toString().padStart(2, '0'));
+                animateNumber('minutes', minutes.toString().padStart(2, '0'));
+                animateNumber('seconds', seconds.toString().padStart(2, '0'));
+            } else {
+                document.getElementById('days').textContent = '000';
+                document.getElementById('hours').textContent = '00';
+                document.getElementById('minutes').textContent = '00';
+                document.getElementById('seconds').textContent = '00';
+            }
+        }
+        
+        function animateNumber(elementId, newValue) {
+            const element = document.getElementById(elementId);
+            if (element.textContent !== newValue) {
+                element.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    element.textContent = newValue;
+                    element.style.transform = 'scale(1)';
+                }, 100);
+            }
+        }
+        
+        // Create floating particles
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 8 + 's';
+            particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+            
+            // Random colors from our palette
+            const colors = ['#ff6b35', '#f7931e', '#ffdc00'];
+            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+            
+            document.body.appendChild(particle);
+            
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.remove();
+                }
+            }, 10000);
+        }
+        
+        // Initialize countdown
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+        
+        // Create particles periodically
+        setInterval(createParticle, 500);
+        
+        // Create initial burst of particles
+        for (let i = 0; i < 8; i++) {
+            setTimeout(createParticle, i * 200);
+        }
+        
+        // Add some interactive effects
+        document.querySelectorAll('.time-number').forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                element.style.transform = 'scale(1.2) rotate(5deg)';
+            });
+            
+            element.addEventListener('mouseleave', () => {
+                element.style.transform = 'scale(1) rotate(0deg)';
+            });
+        });
+    </script>
+</body>
+</html>
